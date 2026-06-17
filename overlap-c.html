@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept C — Timeline Gantt</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222636;
+    --border: #2e3347;
+    --accent: #a78bfa;
+    --accent-blue: #4f8ef7;
+    --accent2: #34d399;
+    --accent3: #f59e0b;
+    --accent4: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --pill-bg: #1e2235;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 32px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  .topbar a { color: var(--muted); text-decoration: none; }
+  .topbar a:hover { color: var(--text); }
+  .topbar .sep { opacity: .4; }
+  .topbar .current { color: var(--text); font-weight: 500; }
+  .concept-badge { margin-left: auto; background: rgba(167,139,250,.15); border: 1px solid rgba(167,139,250,.3); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: .05em; }
+
+  .page { flex: 1; display: flex; flex-direction: column; padding: 28px 36px 48px; gap: 24px; max-width: 1100px; width: 100%; margin: 0 auto; }
+
+  /* Header row */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+  .page-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+  .page-header p { font-size: 13px; color: var(--muted); }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .stat-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .stat-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent4); }
+  .stat-pill strong { color: var(--accent4); }
+  .btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 13px; cursor: pointer; transition: background .12s; }
+  .btn:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn-primary:hover { background: #9270f5; }
+
+  /* Legend */
+  .legend { display: flex; align-items: center; gap: 20px; font-size: 12px; color: var(--muted); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 24px; height: 8px; border-radius: 3px; }
+  .legend-overlap { background: rgba(248,113,113,.35); border: 1px dashed rgba(248,113,113,.7); }
+  .legend-bar { width: 24px; height: 8px; border-radius: 3px; background: var(--accent-blue); }
+
+  /* Gantt chart */
+  .gantt-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .gantt-header-row { display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid var(--border); }
+  .gantt-label-cell { padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border-right: 1px solid var(--border); }
+  .gantt-axis { display: flex; }
+  .gantt-month { flex: 1; text-align: center; padding: 10px 0; font-size: 10px; color: var(--muted); border-right: 1px solid var(--border); }
+  .gantt-month:last-child { border-right: none; }
+
+  .gantt-row { display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid var(--border); transition: background .12s; }
+  .gantt-row:last-child { border-bottom: none; }
+  .gantt-row:hover { background: var(--surface2); }
+  .gantt-row.highlighted { background: rgba(167,139,250,.05); }
+
+  .gantt-proj-cell { padding: 12px 14px; border-right: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .proj-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .proj-cell-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .proj-cell-badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; flex-shrink: 0; }
+  .badge-o { background: rgba(248,113,113,.2); color: var(--accent4); }
+
+  .gantt-track-cell { position: relative; height: 46px; }
+  /* month grid lines */
+  .gantt-track-cell::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(to right, transparent, transparent calc(100%/12 - 1px), var(--border) calc(100%/12 - 1px), var(--border) calc(100%/12));
+    pointer-events: none;
+    z-index: 0;
+  }
+  .gantt-bar { position: absolute; top: 50%; transform: translateY(-50%); height: 22px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; cursor: pointer; z-index: 1; transition: filter .12s; }
+  .gantt-bar:hover { filter: brightness(1.15); }
+  .gantt-overlap-zone {
+    position: absolute; top: 0; height: 100%;
+    background: rgba(248,113,113,.18);
+    border-left: 1.5px dashed rgba(248,113,113,.65);
+    border-right: 1.5px dashed rgba(248,113,113,.65);
+    z-index: 2; cursor: pointer;
+    transition: background .12s;
+  }
+  .gantt-overlap-zone:hover { background: rgba(248,113,113,.3); }
+  .overlap-zone-label {
+    position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; font-weight: 700; color: var(--accent4);
+    background: rgba(15,17,23,.8); padding: 1px 4px; border-radius: 3px;
+    white-space: nowrap; pointer-events: none;
+  }
+
+  /* Overlap review panel */
+  .review-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    display: none;
+  }
+  .review-panel.visible { display: block; }
+
+  .review-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .review-title { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+  .review-sub { font-size: 13px; color: var(--muted); }
+  .review-nav { display: flex; align-items: center; gap: 10px; }
+  .nav-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .nav-btn:hover { background: var(--border); }
+  .nav-btn:disabled { opacity: .3; cursor: default; }
+  .nav-counter { font-size: 12px; font-family: monospace; color: var(--accent); background: var(--pill-bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 10px; }
+
+  .review-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .review-projects { display: flex; flex-direction: column; gap: 10px; }
+  .review-proj-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .rpc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .rpc-info { flex: 1; }
+  .rpc-name { font-size: 13px; font-weight: 600; }
+  .rpc-dates { font-size: 11px; color: var(--muted); }
+  .vs-divider { text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 2px 0; }
+
+  .review-actions { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .review-actions p { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .action-btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 13px; cursor: pointer; text-align: left; transition: background .12s; }
+  .action-btn:hover { background: var(--border); }
+  .action-btn.primary { background: rgba(167,139,250,.15); border-color: rgba(167,139,250,.35); color: var(--accent); }
+  .action-btn.primary:hover { background: rgba(167,139,250,.25); }
+  .action-btn-label { font-weight: 600; display: block; }
+  .action-btn-desc { font-size: 11px; color: var(--muted); margin-top: 1px; display: block; }
+
+  /* Click hint */
+  .click-hint { text-align: center; font-size: 12px; color: var(--muted); padding: 8px; }
+  .click-hint span { background: rgba(167,139,250,.12); border: 1px solid rgba(167,139,250,.2); border-radius: 6px; padding: 5px 14px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="overlap-hub.html">← All concepts</a>
+  <span class="sep">/</span>
+  <span class="current">Concept C — Timeline Gantt</span>
+  <span class="concept-badge">Concept C</span>
+</div>
+
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h2>Overlapping projects — Timeline view</h2>
+      <p>All projects plotted on a shared timeline. Red zones mark overlapping reductions — click to review and resolve.</p>
+    </div>
+    <div class="header-right">
+      <div class="stat-pill"><div class="dot"></div><strong>4</strong> overlaps to resolve</div>
+      <button class="btn btn-primary" onclick="nextOverlap()">Review next overlap →</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch legend-bar"></div> Project duration</div>
+    <div class="legend-item"><div class="legend-swatch legend-overlap"></div> Overlapping reductions (click to resolve)</div>
+  </div>
+
+  <!-- GANTT -->
+  <div class="gantt-wrap">
+    <div class="gantt-header-row">
+      <div class="gantt-label-cell">Project</div>
+      <div class="gantt-axis">
+        <div class="gantt-month">Jan</div><div class="gantt-month">Feb</div><div class="gantt-month">Mar</div>
+        <div class="gantt-month">Apr</div><div class="gantt-month">May</div><div class="gantt-month">Jun</div>
+        <div class="gantt-month">Jul</div><div class="gantt-month">Aug</div><div class="gantt-month">Sep</div>
+        <div class="gantt-month">Oct</div><div class="gantt-month">Nov</div><div class="gantt-month">Dec</div>
+      </div>
+    </div>
+
+    <!-- Solar Farm: months 0–11 (full year), overlaps at 3-5, 6-7, 8-9 -->
+    <div class="gantt-row" id="row-solar">
+      <div class="gantt-proj-cell">
+        <div class="proj-dot" style="background:#4f8ef7;"></div>
+        <div>
+          <div class="proj-cell-name">Solar Farm Alpha</div>
+          <span class="proj-cell-badge badge-o">3 overlaps</span>
+        </div>
+      </div>
+      <div class="gantt-track-cell">
+        <div class="gantt-overlap-zone" style="left:calc(3/12*100%);width:calc(3/12*100%);" onclick="openOverlap(0)"><div class="overlap-zone-label">⚠ EV Fleet</div></div>
+        <div class="gantt-overlap-zone" style="left:calc(6/12*100%);width:calc(2/12*100%);" onclick="openOverlap(1)"><div class="overlap-zone-label">⚠ Retrofit</div></div>
+        <div class="gantt-overlap-zone" style="left:calc(8/12*100%);width:calc(2/12*100%);" onclick="openOverlap(2)"><div class="overlap-zone-label">⚠ Grid</div></div>
+        <div class="gantt-bar" style="left:calc(0/12*100% + 3px);width:calc(12/12*100% - 6px);background:#4f8ef7;">Solar Farm Alpha</div>
+      </div>
+    </div>
+
+    <!-- EV Fleet: months 2–7 -->
+    <div class="gantt-row" id="row-ev">
+      <div class="gantt-proj-cell">
+        <div class="proj-dot" style="background:#a78bfa;"></div>
+        <div><div class="proj-cell-name">EV Fleet Program</div></div>
+      </div>
+      <div class="gantt-track-cell">
+        <div class="gantt-overlap-zone" style="left:calc(3/12*100%);width:calc(3/12*100%);" onclick="openOverlap(0)"></div>
+        <div class="gantt-bar" style="left:calc(2/12*100% + 3px);width:calc(6/12*100% - 6px);background:#a78bfa;">EV Fleet Program</div>
+      </div>
+    </div>
+
+    <!-- Retrofit: months 5–14 (show capped at 11) -->
+    <div class="gantt-row" id="row-retrofit">
+      <div class="gantt-proj-cell">
+        <div class="proj-dot" style="background:#f59e0b;"></div>
+        <div>
+          <div class="proj-cell-name">Retrofit Buildings</div>
+          <span class="proj-cell-badge badge-o">1 overlap</span>
+        </div>
+      </div>
+      <div class="gantt-track-cell">
+        <div class="gantt-overlap-zone" style="left:calc(6/12*100%);width:calc(2/12*100%);" onclick="openOverlap(1)"></div>
+        <div class="gantt-bar" style="left:calc(5/12*100% + 3px);width:calc(7/12*100% - 6px);background:#f59e0b;">Retrofit Buildings</div>
+      </div>
+    </div>
+
+    <!-- Green Logistics: months 1–6 -->
+    <div class="gantt-row" id="row-logistics">
+      <div class="gantt-proj-cell">
+        <div class="proj-dot" style="background:#34d399;"></div>
+        <div><div class="proj-cell-name">Green Logistics</div></div>
+      </div>
+      <div class="gantt-track-cell">
+        <div class="gantt-bar" style="left:calc(1/12*100% + 3px);width:calc(5/12*100% - 6px);background:#34d399;">Green Logistics</div>
+      </div>
+    </div>
+
+    <!-- Grid Storage: months 8–11 -->
+    <div class="gantt-row" id="row-grid">
+      <div class="gantt-proj-cell">
+        <div class="proj-dot" style="background:#f87171;"></div>
+        <div><div class="proj-cell-name">Grid Storage</div></div>
+      </div>
+      <div class="gantt-track-cell">
+        <div class="gantt-overlap-zone" style="left:calc(8/12*100%);width:calc(2/12*100%);" onclick="openOverlap(2)"></div>
+        <div class="gantt-bar" style="left:calc(8/12*100% + 3px);width:calc(4/12*100% - 6px);background:#f87171;">Grid Storage</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="click-hint" id="click-hint"><span>Click any red overlap zone above to review and resolve it</span></div>
+
+  <!-- Review panel -->
+  <div class="review-panel" id="review-panel">
+    <div class="review-header">
+      <div>
+        <div class="review-title" id="review-title">Overlap: Solar Farm Alpha × EV Fleet Program</div>
+        <div class="review-sub" id="review-sub">Apr – Jun 2024 · Both projects claim reductions from the same electricity activities</div>
+      </div>
+      <div class="review-nav">
+        <button class="nav-btn" id="nav-prev" onclick="stepOverlap(-1)">‹</button>
+        <span class="nav-counter" id="nav-counter">1 / 4</span>
+        <button class="nav-btn" id="nav-next" onclick="stepOverlap(1)">›</button>
+        <button class="btn" onclick="closePanel()" style="margin-left:4px;">✕</button>
+      </div>
+    </div>
+    <div class="review-body">
+      <div class="review-projects">
+        <div class="review-proj-card">
+          <div class="rpc-dot" id="card-a-dot" style="background:#4f8ef7;"></div>
+          <div class="rpc-info">
+            <div class="rpc-name" id="card-a-name">Solar Farm Alpha</div>
+            <div class="rpc-dates" id="card-a-dates">Jan 2024 – Dec 2024</div>
+          </div>
+        </div>
+        <div class="vs-divider">overlaps with</div>
+        <div class="review-proj-card">
+          <div class="rpc-dot" id="card-b-dot" style="background:#a78bfa;"></div>
+          <div class="rpc-info">
+            <div class="rpc-name" id="card-b-name">EV Fleet Program</div>
+            <div class="rpc-dates" id="card-b-dates">Mar 2024 – Aug 2024</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-actions">
+        <p>How would you like to resolve this overlap?</p>
+        <button class="action-btn primary">
+          <span class="action-btn-label">Split the reduction equally</span>
+          <span class="action-btn-desc">Each project gets 50% of the overlapping activities</span>
+        </button>
+        <button class="action-btn" id="assign-a-btn">
+          <span class="action-btn-label" id="assign-a-label">Assign all to Solar Farm Alpha</span>
+          <span class="action-btn-desc">Remove this period from EV Fleet Program</span>
+        </button>
+        <button class="action-btn" id="assign-b-btn">
+          <span class="action-btn-label" id="assign-b-label">Assign all to EV Fleet Program</span>
+          <span class="action-btn-desc">Remove this period from Solar Farm Alpha</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const overlaps = [
+  {
+    title: 'Solar Farm Alpha × EV Fleet Program',
+    sub: 'Apr – Jun 2024 · Both projects claim reductions from the same electricity activities',
+    aName: 'Solar Farm Alpha', aColor: '#4f8ef7', aDates: 'Jan 2024 – Dec 2024',
+    bName: 'EV Fleet Program', bColor: '#a78bfa', bDates: 'Mar 2024 – Aug 2024',
+  },
+  {
+    title: 'Solar Farm Alpha × Retrofit Buildings',
+    sub: 'Jul – Aug 2024 · Shared building energy reduction activities',
+    aName: 'Solar Farm Alpha', aColor: '#4f8ef7', aDates: 'Jan 2024 – Dec 2024',
+    bName: 'Retrofit Buildings', bColor: '#f59e0b', bDates: 'Jun 2024 – Mar 2025',
+  },
+  {
+    title: 'Solar Farm Alpha × Grid Storage',
+    sub: 'Sep – Oct 2024 · Electricity generation reductions from same grid segment',
+    aName: 'Solar Farm Alpha', aColor: '#4f8ef7', aDates: 'Jan 2024 – Dec 2024',
+    bName: 'Grid Storage', bColor: '#f87171', bDates: 'Sep 2024 – Jun 2025',
+  },
+  {
+    title: 'Retrofit Buildings × Solar Farm Alpha',
+    sub: 'Jul – Aug 2024 · Same as conflict 2, from Retrofit\'s perspective',
+    aName: 'Retrofit Buildings', aColor: '#f59e0b', aDates: 'Jun 2024 – Mar 2025',
+    bName: 'Solar Farm Alpha', bColor: '#4f8ef7', bDates: 'Jan 2024 – Dec 2024',
+  },
+];
+
+let currentIdx = 0;
+
+function openOverlap(idx) {
+  currentIdx = idx;
+  renderPanel();
+  document.getElementById('review-panel').classList.add('visible');
+  document.getElementById('click-hint').style.display = 'none';
+  document.getElementById('review-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closePanel() {
+  document.getElementById('review-panel').classList.remove('visible');
+  document.getElementById('click-hint').style.display = '';
+}
+
+function stepOverlap(dir) {
+  currentIdx = Math.max(0, Math.min(overlaps.length - 1, currentIdx + dir));
+  renderPanel();
+}
+
+function nextOverlap() {
+  currentIdx = (currentIdx + 1) % overlaps.length;
+  renderPanel();
+  document.getElementById('review-panel').classList.add('visible');
+  document.getElementById('click-hint').style.display = 'none';
+}
+
+function renderPanel() {
+  const o = overlaps[currentIdx];
+  document.getElementById('review-title').textContent = o.title;
+  document.getElementById('review-sub').textContent = o.sub;
+  document.getElementById('card-a-dot').style.background = o.aColor;
+  document.getElementById('card-a-name').textContent = o.aName;
+  document.getElementById('card-a-dates').textContent = o.aDates;
+  document.getElementById('card-b-dot').style.background = o.bColor;
+  document.getElementById('card-b-name').textContent = o.bName;
+  document.getElementById('card-b-dates').textContent = o.bDates;
+  document.getElementById('assign-a-label').textContent = 'Assign all to ' + o.aName;
+  document.getElementById('assign-b-label').textContent = 'Assign all to ' + o.bName;
+  document.getElementById('nav-counter').textContent = (currentIdx + 1) + ' / ' + overlaps.length;
+  document.getElementById('nav-prev').disabled = currentIdx === 0;
+  document.getElementById('nav-next').disabled = currentIdx === overlaps.length - 1;
+}
+</script>
+</body>
+</html>
