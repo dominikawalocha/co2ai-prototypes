@@ -1,0 +1,1106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Detail — Reduce · CO2 AI</title>
+  <style>
+    :root {
+      --bg: #0e0e12;
+      --bg2: #161619;
+      --bg3: #1c1c21;
+      --card: #1e1e24;
+      --card2: #252530;
+      --ink: #e8e8f0;
+      --muted: #8888a0;
+      --soft: #5a5a70;
+      --line: #2a2a35;
+      --accent: #22c55e;
+      --accent-dim: #16a34a;
+      --accent-bg: #0f2d1a;
+      --accent-border: #1a4d2a;
+      --warn: #f59e0b;
+      --warn-bg: #2d1f06;
+      --warn-border: #4d3510;
+      --blue: #3b82f6;
+      --blue-dim: #2563eb;
+      --purple: #8b5cf6;
+      --red: #ef4444;
+      --projA: #3b82f6;
+      --projB: #8b5cf6;
+      --projC: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    /* ── Top nav ── */
+    .topnav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; color: var(--muted);
+      font-size: 13px; cursor: pointer; padding: 5px 8px;
+      border-radius: 6px; transition: color .15s, background .15s;
+    }
+    .back-btn:hover { color: var(--ink); background: var(--bg3); }
+    .back-btn svg { width: 14px; height: 14px; }
+    .topnav-sep { color: var(--soft); font-size: 13px; }
+    .topnav-title { color: var(--muted); font-size: 13px; }
+    .topnav-actions { margin-left: auto; display: flex; gap: 8px; }
+    .btn {
+      padding: 7px 14px; border-radius: 7px; font-size: 13px;
+      font-weight: 600; cursor: pointer; border: none;
+      display: flex; align-items: center; gap: 6px; transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-ghost {
+      background: var(--card2); color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .btn-danger { background: var(--red); color: #fff; }
+
+    /* ── Header card ── */
+    .header-card {
+      margin: 20px 28px 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-card .label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .header-card h1 { font-size: 20px; font-weight: 700; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      border: 1px solid var(--warn-border);
+      background: var(--warn-bg);
+      color: var(--warn);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px; font-weight: 600;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+
+    /* ── Tabs ── */
+    .tabs-wrap {
+      margin: 20px 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .tabs {
+      display: flex; gap: 0;
+    }
+    .tab {
+      padding: 10px 20px;
+      font-size: 14px; font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .tab-badge {
+      background: var(--warn-bg);
+      color: var(--warn);
+      border: 1px solid var(--warn-border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* ── Content area ── */
+    .content { padding: 24px 28px 60px; }
+
+    /* ─────────────────────────────── DETAILS TAB ─── */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .info-card .label {
+      font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 12px; font-weight: 600;
+    }
+    .info-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: var(--muted); }
+    .info-val { color: var(--ink); font-weight: 500; text-align: right; }
+    .info-val.green { color: var(--accent); font-family: monospace; }
+    .info-val.warn { color: var(--warn); }
+
+    .methodology-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .methodology-card h3 {
+      font-size: 15px; font-weight: 700; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .methodology-card.collapsible h3 {
+      cursor: pointer; margin-bottom: 0; user-select: none;
+    }
+    .methodology-card.collapsible h3:hover { color: var(--accent); }
+    .methodology-card.collapsible h3 .chevron {
+      margin-left: auto; transition: transform 0.2s; font-size: 13px; color: var(--muted);
+    }
+    .methodology-card.collapsible.open h3 .chevron { transform: rotate(180deg); }
+    .methodology-card.collapsible .method-body {
+      display: none; margin-top: 16px;
+    }
+    .methodology-card.collapsible.open .method-body { display: block; }
+    .big-idea-box {
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .big-idea-box .eyebrow {
+      font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--accent); font-weight: 700; margin-bottom: 8px;
+    }
+    .big-idea-box .statement {
+      font-size: 15px; line-height: 1.5; color: #c8f0d8;
+    }
+    .big-idea-box .statement b { color: var(--accent); }
+
+    .mono-block {
+      background: #0a1a10;
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .mono-block .dim { color: var(--muted); }
+    .mono-block .hi { color: #86efac; }
+
+    .method-section { margin-bottom: 14px; }
+    .method-section h4 {
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); font-weight: 700; margin-bottom: 10px;
+    }
+    .example-bars {
+      display: flex; align-items: flex-end; gap: 12px;
+      margin: 14px 0; height: 160px;
+    }
+    .ex-col {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+    }
+    .ex-bar {
+      width: 100%; border-radius: 4px 4px 0 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .ex-label { margin-top: 8px; font-size: 11px; color: var(--muted); text-align: center; }
+    .ex-label b { color: var(--ink); }
+    .ex-arrow {
+      font-size: 11px; color: var(--muted); text-align: center;
+      margin-bottom: 6px; min-height: 14px;
+    }
+
+    .what-changes-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .change-box {
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .change-box.stays {
+      background: var(--accent-bg); border: 1px solid var(--accent-border);
+    }
+    .change-box.moves {
+      background: var(--warn-bg); border: 1px solid var(--warn-border);
+    }
+    .change-box .ch { font-weight: 700; margin-bottom: 8px; font-size: 13px; }
+    .change-box.stays .ch { color: var(--accent); }
+    .change-box.moves .ch { color: var(--warn); }
+    .change-box ul { padding-left: 16px; font-size: 12.5px; color: var(--muted); }
+    .change-box li { margin-bottom: 4px; }
+
+    /* ─────────────────────────────── OVERLAPS TAB ─── */
+    .overlaps-header {
+      margin-bottom: 20px;
+    }
+    .overlaps-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .overlaps-header p { color: var(--muted); font-size: 13px; }
+
+    .summary-bar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .summary-bar .left { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+    .summary-bar .combined { font-size: 20px; font-weight: 700; color: var(--accent); font-family: monospace; }
+    .summary-bar .combined-label { font-size: 11px; color: var(--muted); text-align: right; }
+    .expand-btn {
+      background: none; border: none; color: var(--accent); font-size: 12px;
+      cursor: pointer; font-weight: 600; padding: 2px 6px;
+    }
+    .section-label {
+      font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted); font-weight: 700; margin-bottom: 10px;
+    }
+
+    /* project rows */
+    .project-row {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex; align-items: flex-start; gap: 12px;
+      cursor: grab; transition: border-color .15s, background .15s;
+      position: relative;
+    }
+    .project-row:active { cursor: grabbing; }
+    .project-row.this-project {
+      border-color: var(--accent);
+      background: #0d1f14;
+    }
+    .project-row.dragging {
+      opacity: .5; border-style: dashed;
+    }
+    .project-row.drag-over {
+      border-color: var(--accent); background: var(--accent-bg);
+    }
+    .drag-handle {
+      color: var(--soft); cursor: grab; padding: 2px 4px;
+      display: flex; flex-direction: column; gap: 3px; margin-top: 2px;
+    }
+    .drag-handle span {
+      display: block; width: 14px; height: 2px; background: var(--soft);
+      border-radius: 1px;
+    }
+    .proj-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--card2); border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .proj-num.this { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+    .proj-body { flex: 1; }
+    .proj-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .this-tag {
+      display: inline-block;
+      background: var(--accent-bg); color: var(--accent);
+      border: 1px solid var(--accent-border);
+      border-radius: 4px; padding: 1px 6px; font-size: 11px;
+      font-weight: 600; margin-left: 8px;
+    }
+    .proj-meta {
+      display: flex; flex-wrap: wrap; gap: 10px 24px;
+      font-size: 12px; color: var(--muted);
+    }
+    .proj-meta span b { color: var(--ink); }
+    .official-badge {
+      background: var(--card2); border: 1px solid var(--line);
+      color: var(--accent); border-radius: 4px; padding: 2px 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: .05em;
+    }
+    .proj-impact {
+      font-size: 18px; font-weight: 700; color: var(--accent);
+      font-family: monospace; text-align: right; flex-shrink: 0;
+    }
+    .proj-impact small { font-size: 11px; font-weight: 400; color: var(--muted); display: block; }
+
+    /* why overlap explanation */
+    .why-box {
+      background: var(--bg3);
+      border: 1px solid var(--line);
+      border-left: 2px solid var(--blue);
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-size: 12px; color: var(--muted);
+      line-height: 1.5;
+    }
+    .why-box b { color: var(--ink); }
+
+    /* yearly contribution chart */
+    .yearly-wrap {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px 20px 12px;
+      margin: 20px 0;
+      color: var(--ink);
+    }
+    .yearly-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+    .yearly-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .yearly-sub { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+    .yearly-toggle { display: flex; gap: 8px; }
+    .yearly-btn { display: flex; align-items: center; gap: 5px; background: var(--card2); border: 1px solid var(--line); border-radius: 7px; padding: 6px 12px; font-size: 12px; font-weight: 500; color: var(--ink); cursor: pointer; }
+    .yearly-btn:hover { background: var(--bg3); }
+    .yearly-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .yearly-ctrl-label { font-size: 12px; color: var(--muted); }
+    .yearly-ctrl-btn { background: var(--card2); border: 1px solid var(--line); border-radius: 20px; padding: 5px 16px; font-size: 13px; color: var(--ink); cursor: pointer; }
+    .yearly-ctrl-btn.active { font-weight: 700; border-color: var(--muted); }
+    .yearly-ctrl-btn:hover { background: var(--bg3); }
+    .yearly-legend { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .yl-chip { display: flex; align-items: center; gap: 7px; background: var(--card2); border: 1px solid var(--line); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 500; color: var(--ink); cursor: pointer; }
+    .yl-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .yearly-chart { position: relative; }
+    .wf-col {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+      position: relative;
+    }
+    .wf-val {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      margin-bottom: 4px; text-align: center;
+    }
+    .wf-bar {
+      width: 100%; max-width: 80px;
+      border-radius: 4px 4px 0 0;
+      position: relative;
+    }
+    .wf-connector {
+      position: absolute; top: 0; right: -10px;
+      width: 10px; height: 1px; background: var(--line);
+    }
+    .wf-label {
+      margin-top: 10px; font-size: 11px; color: var(--muted);
+      text-align: center; line-height: 1.3;
+    }
+    .wf-label b { color: var(--ink); font-size: 12px; }
+    .wf-delta-label {
+      font-size: 11px; font-weight: 700; color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .wf-connector-line {
+      position: absolute; height: 1px; background: var(--soft);
+      top: 0;
+    }
+    .legend { display: flex; gap: 14px; margin-top: 16px; }
+    .legend-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--muted);
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 2px;
+    }
+
+    /* timeline view */
+    .timeline-wrap {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 14px 0;
+    }
+    .timeline-wrap h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+    .timeline-header {
+      display: flex; border-bottom: 1px solid var(--line);
+      padding-bottom: 8px; margin-bottom: 12px;
+    }
+    .timeline-label-col { width: 180px; flex-shrink: 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .timeline-years {
+      flex: 1; display: flex;
+    }
+    .timeline-year {
+      flex: 1; font-size: 11px; color: var(--muted); text-align: center;
+    }
+    .timeline-row {
+      display: flex; align-items: center; margin-bottom: 10px;
+    }
+    .tl-name {
+      width: 180px; flex-shrink: 0; font-size: 12px; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      padding-right: 12px;
+    }
+    .tl-track { flex: 1; position: relative; height: 24px; }
+    .tl-bar {
+      position: absolute; height: 18px; border-radius: 4px;
+      top: 3px; display: flex; align-items: center; padding: 0 8px;
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,.9);
+      white-space: nowrap; overflow: hidden;
+    }
+    .tl-this { border: 2px solid var(--accent); }
+
+    /* overlap scope */
+    .scope-cards {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .scope-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .scope-card .sc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; }
+    .scope-card .sc-val { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .scope-card .sc-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* note */
+    .note-bar {
+      background: var(--bg3); border: 1px solid var(--line);
+      border-radius: 8px; padding: 12px 16px;
+      font-size: 12.5px; color: var(--muted); margin-top: 8px;
+    }
+    .note-bar b { color: var(--ink); }
+
+    /* drag tip */
+    .drag-tip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg3); border: 1px solid var(--line);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 12px; color: var(--muted); margin-bottom: 14px;
+    }
+    .drag-tip svg { color: var(--accent); flex-shrink: 0; }
+
+    /* reorder callout */
+    .reorder-callout {
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12.5px; color: #86efac;
+      margin-top: 14px;
+      display: none;
+    }
+    .reorder-callout.visible { display: block; }
+
+    /* section */
+    section { margin-bottom: 24px; }
+
+    /* overlap count badge in timeline */
+    .overlap-count-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--warn-bg); color: var(--warn);
+      border: 1px solid var(--warn-border);
+      border-radius: 999px; padding: 2px 8px;
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* divider */
+    .divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+
+    /* hidden */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <button class="back-btn" onclick="window.location.href='official-roadmap.html'">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    Performance Hub
+  </button>
+  <span class="topnav-sep">/</span>
+  <span class="topnav-title">40% Efficiency by 2030 on Site Ops</span>
+  <div class="topnav-actions">
+    <button class="btn btn-ghost" onclick="document.getElementById('tab-details').click()">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      Edit
+    </button>
+    <button class="btn btn-primary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      Approve
+    </button>
+  </div>
+</nav>
+
+<!-- HEADER CARD -->
+<div class="header-card">
+  <div>
+    <div class="label">Name</div>
+    <h1>40% Efficiency by 2030 on Site Ops</h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="status-badge"><span class="status-dot"></span> In Review</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab" id="tab-details" onclick="switchTab('details')">Details</div>
+    <div class="tab active" id="tab-overlaps" onclick="switchTab('overlaps')">
+      Overlaps
+      <span class="tab-badge">⚠ 2</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ══════════════════════ DETAILS PANEL ══════════════════════ -->
+  <div class="tab-panel" id="panel-details">
+
+    <!-- meta info grid -->
+    <div class="details-grid">
+      <div class="info-card">
+        <div class="label">Project info</div>
+        <div class="info-row"><span class="info-key">Status</span><span class="info-val warn">In Review</span></div>
+        <div class="info-row"><span class="info-key">Strategic lever</span><span class="info-val">Scope 1 – 10% Process</span></div>
+        <div class="info-row"><span class="info-key">Scope</span><span class="info-val">1</span></div>
+        <div class="info-row"><span class="info-key">Type of change</span><span class="info-val">Reduce emission factor</span></div>
+        <div class="info-row"><span class="info-key">Cost</span><span class="info-val">USD 100.00M</span></div>
+      </div>
+      <div class="info-card">
+        <div class="label">Scope &amp; timeline</div>
+        <div class="info-row"><span class="info-key">Supplier</span><span class="info-val">Supplier 4197</span></div>
+        <div class="info-row"><span class="info-key">Departments</span><span class="info-val">All depts</span></div>
+        <div class="info-row"><span class="info-key">Timeline</span><span class="info-val">2025 → 2028</span></div>
+        <div class="info-row"><span class="info-key">Assumption</span><span class="info-val">EF −3.5% by 2028 · linear</span></div>
+        <div class="info-row"><span class="info-key">Impact</span><span class="info-val green">−0.21 ktCO₂e</span></div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+  </div><!-- /panel-details -->
+
+
+  <!-- ══════════════════════ OVERLAPS PANEL ══════════════════════ -->
+  <div class="tab-panel active" id="panel-overlaps">
+
+    <div class="overlaps-header">
+      <h2>Overlapping review</h2>
+      <p>How this project interacts with other projects targeting the same activities and scope.</p>
+    </div>
+
+    <!-- overlap scope summary -->
+    <div class="scope-cards">
+      <div class="scope-card">
+        <div class="sc-label">Shared supplier</div>
+        <div class="sc-val">Supplier 4197</div>
+        <div class="sc-sub">All 3 projects target this supplier</div>
+      </div>
+      <div class="scope-card">
+        <div class="sc-label">Shared activity type</div>
+        <div class="sc-val">Reduce emission factor</div>
+        <div class="sc-sub">Steam &amp; heating-related EF</div>
+      </div>
+      <div class="scope-card">
+        <div class="sc-label">Overlap period</div>
+        <div class="sc-val">2024 – 2028</div>
+        <div class="sc-sub">Projects active simultaneously</div>
+      </div>
+    </div>
+
+    <!-- summary bar -->
+    <div class="summary-bar">
+      <div class="left">
+        <span>3 official</span>
+        <span style="color:var(--soft)">·</span>
+        <span>0 draft</span>
+        <button class="expand-btn">(expanded)</button>
+        <span style="color:var(--soft)">·</span>
+        <span>ordered by date added</span>
+      </div>
+      <div style="text-align:right;">
+        <div class="combined">−0.31 ktCO₂e</div>
+        <div class="combined-label">combined impact</div>
+      </div>
+    </div>
+
+    <!-- drag tip -->
+    <div class="drag-tip">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+      <span>Drag rows to reorder projects. Impact recalculates at each position — earlier projects see more emissions, later ones see less.</span>
+    </div>
+
+    <!-- reorder callout (shown after drag) -->
+    <div class="reorder-callout" id="reorder-callout">
+      ✓ Order updated. Impact figures have been recalculated based on the new sequence.
+    </div>
+
+    <div class="section-label" style="margin-bottom:10px;">Official — applied in this order</div>
+
+    <!-- draggable project list -->
+    <div id="project-list">
+      <!-- Row 1 -->
+      <div class="project-row" draggable="true" data-id="1">
+        <div class="drag-handle"><span></span><span></span><span></span></div>
+        <div class="proj-num">1</div>
+        <div class="proj-body">
+          <div class="proj-name">Shift from Steam to Heatpumps</div>
+          <div class="proj-meta">
+            <span><b>Change</b> Reduce emission factor</span>
+            <span><b>Supplier</b> 4197 · All depts</span>
+            <span><b>Timeline</b> 2024 → 2025</span>
+            <span><b>Assumption</b> EF −3.5% by 2025 · linear</span>
+          </div>
+          <div class="why-box">
+            <b>Why it overlaps:</b> Targets the same supplier (4197) and the same emission factor category (steam / heating). Because Project A applies first to the full 6,050 t baseline, it captures the largest absolute reduction.
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="official-badge">OFFICIAL</span>
+          <div class="proj-impact">−0.04<small>ktCO₂e</small></div>
+        </div>
+      </div>
+
+      <!-- Row 2 — THIS project -->
+      <div class="project-row this-project" draggable="true" data-id="2">
+        <div class="drag-handle"><span></span><span></span><span></span></div>
+        <div class="proj-num this">2</div>
+        <div class="proj-body">
+          <div class="proj-name">40% Efficiency by 2030 on Site Ops <span class="this-tag">this project</span></div>
+          <div class="proj-meta">
+            <span><b>Change</b> Reduce emission factor</span>
+            <span><b>Supplier</b> 4197 · All depts</span>
+            <span><b>Timeline</b> 2025 → 2028</span>
+            <span><b>Assumption</b> EF −3.5% by 2028 · linear</span>
+          </div>
+          <div class="why-box">
+            <b>Why it overlaps:</b> Starts after Project 1 completes. It sees a lower emissions base (already reduced by −0.04 ktCO₂e), so its 3.5% reduction applies to a smaller pool — producing −0.21 ktCO₂e rather than −0.25 ktCO₂e it would yield as the first project.
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="official-badge">OFFICIAL</span>
+          <div class="proj-impact">−0.21<small>ktCO₂e</small></div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="project-row" draggable="true" data-id="3">
+        <div class="drag-handle"><span></span><span></span><span></span></div>
+        <div class="proj-num">3</div>
+        <div class="proj-body">
+          <div class="proj-name">Electricity replaces 60% of steam</div>
+          <div class="proj-meta">
+            <span><b>Change</b> Reduce emission factor</span>
+            <span><b>Supplier</b> 4197 · HVAC segment</span>
+            <span><b>Timeline</b> 2024 → 2026</span>
+            <span><b>Assumption</b> EF −5% by 2026 · linear</span>
+          </div>
+          <div class="why-box">
+            <b>Why it overlaps:</b> Targets the HVAC segment of the same supplier. Although it has a higher % assumption (−5%), it applies to a narrower scope (HVAC only) and a smaller remaining base after projects 1 and 2.
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="official-badge">OFFICIAL</span>
+          <div class="proj-impact">−0.06<small>ktCO₂e</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Yearly contribution chart -->
+    <div class="yearly-wrap">
+      <div class="yearly-header">
+        <div>
+          <div class="yearly-title">Yearly contribution · 2024–2035</div>
+          <div class="yearly-sub">Projects stacked in order of application. Solid = active · hatched = savings maintained.</div>
+        </div>
+      </div>
+      <div class="yearly-controls">
+        <span class="yearly-ctrl-label">Other projects:</span>
+        <button class="yearly-ctrl-btn active">Grouped</button>
+        <button class="yearly-ctrl-btn">Split</button>
+        <span style="color:#bbb;font-size:16px">·</span>
+      </div>
+      <div class="yearly-legend">
+        <div class="yl-chip"><div class="yl-dot" style="background:#a78bfa"></div> Fleet</div>
+        <div class="yl-chip"><div class="yl-dot" style="background:#f472b6"></div> Office</div>
+        <div class="yl-chip"><div class="yl-dot" style="background:#fbbf24"></div> Logistics</div>
+        <div class="yl-chip"><div class="yl-dot" style="background:#60a5fa"></div> Supplier A</div>
+        <div class="yl-chip"><div class="yl-dot" style="background:#f97316"></div> BAU</div>
+      </div>
+      <div class="yearly-chart">
+        <!--
+          Scale: 0–16 kt shown, 322 px range (y=14 top → y=336 bottom)
+          1 kt = 20.125 px ≈ 20 px
+          Bar x positions (left edge, width=40): 39,100,161,222,283,344,405,466,527,588,649,710
+          Bar centers (cx): 59,120,181,242,303,364,425,486,547,608,669,730
+
+          Data per year (kt):
+            BAU grows 11.0→14.2 (business-as-usual without any projects)
+            Green = remaining base emissions (∼10.9 kt, stays roughly flat as projects offset BAU growth)
+            Logistics (yellow) = active savings, starts 2026
+            Fleet (purple) = active savings, starts 2025
+            Office (pink) = active savings, starts 2026
+            Supplier A (blue) = active savings, starts 2028 (this project)
+            Hatch = savings maintained from phases that have reached steady-state
+
+          Bars stack bottom→up: green / logistics / fleet / office / supplierA / hatch
+          BAU dot sits above bar top showing gap = total benefit delivered
+        -->
+        <svg id="yearly-svg" viewBox="0 0 780 365" width="100%" style="overflow:visible;">
+          <defs>
+            <pattern id="hatch-multi" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+              <rect width="8" height="8" fill="#6070a0" opacity="0.25"/>
+              <line x1="0" y1="0" x2="0" y2="8" stroke="#c0c8e8" stroke-width="2.5"/>
+            </pattern>
+          </defs>
+
+          <!-- Y-axis labels -->
+          <text x="32" y="18"  fill="#8888a0" font-size="9" text-anchor="end">16 kt</text>
+          <text x="32" y="58"  fill="#8888a0" font-size="9" text-anchor="end">14 kt</text>
+          <text x="32" y="98"  fill="#8888a0" font-size="9" text-anchor="end">12 kt</text>
+          <text x="32" y="138" fill="#8888a0" font-size="9" text-anchor="end">10 kt</text>
+          <text x="32" y="178" fill="#8888a0" font-size="9" text-anchor="end">8 kt</text>
+          <text x="32" y="218" fill="#8888a0" font-size="9" text-anchor="end">6 kt</text>
+          <text x="32" y="258" fill="#8888a0" font-size="9" text-anchor="end">4 kt</text>
+          <text x="32" y="298" fill="#8888a0" font-size="9" text-anchor="end">2 kt</text>
+          <text x="32" y="338" fill="#8888a0" font-size="9" text-anchor="end">0 kt</text>
+
+          <!-- Grid lines (y=14,54,94,134,174,214,254,294,334 → every 2 kt) -->
+          <line x1="36" y1="14"  x2="776" y2="14"  stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="54"  x2="776" y2="54"  stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="94"  x2="776" y2="94"  stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="134" x2="776" y2="134" stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="174" x2="776" y2="174" stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="214" x2="776" y2="214" stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="254" x2="776" y2="254" stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="294" x2="776" y2="294" stroke="#2a2a35" stroke-width="1"/>
+          <line x1="36" y1="334" x2="776" y2="334" stroke="#2a2a35" stroke-width="1"/>
+
+          <!-- Vertical project-start markers -->
+          <!-- Fleet starts 2025 (purple solid) -->
+          <line x1="120" y1="14" x2="120" y2="334" stroke="#a78bfa" stroke-width="1.5"/>
+          <!-- Logistics starts 2026 (yellow/orange solid) -->
+          <line x1="181" y1="14" x2="181" y2="334" stroke="#f97316" stroke-width="1.5" opacity="0.8"/>
+          <!-- This project (Supplier A) starts 2028 (red dashed) -->
+          <line x1="303" y1="14" x2="303" y2="334" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <!-- Phase 2 milestone 2029 (blue dashed) -->
+          <line x1="364" y1="14" x2="364" y2="334" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <!-- Phase 3 milestone 2031 (blue dashed) -->
+          <line x1="486" y1="14" x2="486" y2="334" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+          <!--
+            BAU y positions (1kt=20px, y_bottom=334):
+            11.0→114, 11.3→108, 11.6→102, 11.9→96, 12.2→90, 12.5→84,
+            12.7→80, 12.9→76, 13.2→70, 13.5→64, 13.8→58, 14.2→50
+          -->
+
+          <!-- ===== BARS ===== -->
+
+          <!-- 2024 (x=39): BAU=11.0kt → no projects yet. green=10.9kt(h=218, y=116) -->
+          <rect x="39"  y="116" width="40" height="218" rx="2" fill="#2d9d78"/>
+
+          <!-- 2025 (x=100): Fleet starts. green=10.85(h=217,y=117), fleet=0.1(h=2,y=115) -->
+          <rect x="100" y="117" width="40" height="217" rx="2" fill="#2d9d78"/>
+          <rect x="100" y="115" width="40" height="2"   fill="#a78bfa"/>
+
+          <!-- 2026 (x=161): Logistics joins. green=10.8(h=216,y=118), logistics=0.2(h=4,y=114), fleet=0.15(h=3,y=111), office=0.05(h=1,y=110) -->
+          <rect x="161" y="118" width="40" height="216" rx="2" fill="#2d9d78"/>
+          <rect x="161" y="114" width="40" height="4"   fill="#fbbf24"/>
+          <rect x="161" y="111" width="40" height="3"   fill="#a78bfa"/>
+          <rect x="161" y="110" width="40" height="1"   fill="#f472b6"/>
+
+          <!-- 2027 (x=222): Growing savings. green=10.75(h=215,y=119), logistics=0.3(h=6,y=113), fleet=0.2(h=4,y=109), office=0.1(h=2,y=107) -->
+          <rect x="222" y="119" width="40" height="215" rx="2" fill="#2d9d78"/>
+          <rect x="222" y="113" width="40" height="6"   fill="#fbbf24"/>
+          <rect x="222" y="109" width="40" height="4"   fill="#a78bfa"/>
+          <rect x="222" y="107" width="40" height="2"   fill="#f472b6"/>
+
+          <!-- 2028 (x=283): This project starts (Supplier A). green=10.5(h=210,y=124), logistics=0.35(h=7,y=117), fleet=0.25(h=5,y=112), office=0.15(h=3,y=109), supplierA=0.4(h=8,y=101), hatch=0.2(h=4,y=97) -->
+          <rect x="283" y="124" width="40" height="210" rx="2" fill="#2d9d78"/>
+          <rect x="283" y="117" width="40" height="7"   fill="#fbbf24"/>
+          <rect x="283" y="112" width="40" height="5"   fill="#a78bfa"/>
+          <rect x="283" y="109" width="40" height="3"   fill="#f472b6"/>
+          <rect x="283" y="101" width="40" height="8"   fill="#60a5fa"/>
+          <rect x="283" y="97"  width="40" height="4"   fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2029 (x=344): Phase 2. green=10.3(h=206,y=128), logistics=0.38(h=8,y=120), fleet=0.28(h=6,y=114), office=0.2(h=4,y=110), supplierA=0.75(h=15,y=95), hatch=0.3(h=6,y=89) -->
+          <rect x="344" y="128" width="40" height="206" rx="2" fill="#2d9d78"/>
+          <rect x="344" y="120" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="344" y="114" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="344" y="110" width="40" height="4"   fill="#f472b6"/>
+          <rect x="344" y="95"  width="40" height="15"  fill="#60a5fa"/>
+          <rect x="344" y="89"  width="40" height="6"   fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2030 (x=405): Ramp-up. green=10.2(h=204,y=130), logistics=0.4(h=8,y=122), fleet=0.3(h=6,y=116), office=0.25(h=5,y=111), supplierA=0.85(h=17,y=94), hatch=0.35(h=7,y=87) -->
+          <rect x="405" y="130" width="40" height="204" rx="2" fill="#2d9d78"/>
+          <rect x="405" y="122" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="405" y="116" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="405" y="111" width="40" height="5"   fill="#f472b6"/>
+          <rect x="405" y="94"  width="40" height="17"  fill="#60a5fa"/>
+          <rect x="405" y="87"  width="40" height="7"   fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2031 (x=466): Sustained. green=10.2(h=204,y=130), logistics=0.4(h=8,y=122), fleet=0.3(h=6,y=116), office=0.25(h=5,y=111), supplierA=0.9(h=18,y=93), hatch=0.4(h=8,y=85) -->
+          <rect x="466" y="130" width="40" height="204" rx="2" fill="#2d9d78"/>
+          <rect x="466" y="122" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="466" y="116" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="466" y="111" width="40" height="5"   fill="#f472b6"/>
+          <rect x="466" y="93"  width="40" height="18"  fill="#60a5fa"/>
+          <rect x="466" y="85"  width="40" height="8"   fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2032 (x=527): Maintained savings growing. green=10.3(h=206,y=128), logistics=0.4(h=8,y=120), fleet=0.3(h=6,y=114), office=0.3(h=6,y=108), supplierA=0.95(h=19,y=89), hatch=0.55(h=11,y=78) -->
+          <rect x="527" y="128" width="40" height="206" rx="2" fill="#2d9d78"/>
+          <rect x="527" y="120" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="527" y="114" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="527" y="108" width="40" height="6"   fill="#f472b6"/>
+          <rect x="527" y="89"  width="40" height="19"  fill="#60a5fa"/>
+          <rect x="527" y="78"  width="40" height="11"  fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2033 (x=588): green=10.4(h=208,y=126), logistics=0.4(h=8,y=118), fleet=0.3(h=6,y=112), office=0.3(h=6,y=106), supplierA=1.0(h=20,y=86), hatch=0.65(h=13,y=73) -->
+          <rect x="588" y="126" width="40" height="208" rx="2" fill="#2d9d78"/>
+          <rect x="588" y="118" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="588" y="112" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="588" y="106" width="40" height="6"   fill="#f472b6"/>
+          <rect x="588" y="86"  width="40" height="20"  fill="#60a5fa"/>
+          <rect x="588" y="73"  width="40" height="13"  fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2034 (x=649): green=10.5(h=210,y=124), logistics=0.4(h=8,y=116), fleet=0.3(h=6,y=110), office=0.35(h=7,y=103), supplierA=1.05(h=21,y=82), hatch=0.75(h=15,y=67) -->
+          <rect x="649" y="124" width="40" height="210" rx="2" fill="#2d9d78"/>
+          <rect x="649" y="116" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="649" y="110" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="649" y="103" width="40" height="7"   fill="#f472b6"/>
+          <rect x="649" y="82"  width="40" height="21"  fill="#60a5fa"/>
+          <rect x="649" y="67"  width="40" height="15"  fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- 2035 (x=710): green=10.6(h=212,y=122), logistics=0.4(h=8,y=114), fleet=0.3(h=6,y=108), office=0.35(h=7,y=101), supplierA=1.1(h=22,y=79), hatch=0.9(h=18,y=61) -->
+          <rect x="710" y="122" width="40" height="212" rx="2" fill="#2d9d78"/>
+          <rect x="710" y="114" width="40" height="8"   fill="#fbbf24"/>
+          <rect x="710" y="108" width="40" height="6"   fill="#a78bfa"/>
+          <rect x="710" y="101" width="40" height="7"   fill="#f472b6"/>
+          <rect x="710" y="79"  width="40" height="22"  fill="#60a5fa"/>
+          <rect x="710" y="61"  width="40" height="18"  fill="url(#hatch-multi)" opacity="0.9"/>
+
+          <!-- ===== BAU dashed line ===== -->
+          <!-- BAU y (1kt=20px, y_bottom=334): 11.0→114, 11.3→108, 11.6→102, 11.9→96, 12.2→90, 12.5→84, 12.7→80, 12.9→76, 13.2→70, 13.5→64, 13.8→58, 14.2→50 -->
+          <polyline
+            points="59,114 120,108 181,102 242,96 303,90 364,84 425,80 486,76 547,70 608,64 669,58 730,50"
+            fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="6,4"/>
+          <!-- BAU dots (every other year for clarity) -->
+          <circle cx="59"  cy="114" r="4.5" fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+          <circle cx="181" cy="102" r="4.5" fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+          <circle cx="303" cy="90"  r="4.5" fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+          <circle cx="425" cy="80"  r="4.5" fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+          <circle cx="547" cy="70"  r="4.5" fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+          <circle cx="669" cy="58"  r="4.5" fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+          <circle cx="730" cy="50"  r="5"   fill="#f97316" stroke="#1a1a24" stroke-width="1.5"/>
+
+          <!-- ===== X-axis labels ===== -->
+          <text x="59"  y="350" fill="#8888a0" font-size="9" text-anchor="middle">2024</text>
+          <text x="120" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2025</text>
+          <text x="181" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2026</text>
+          <text x="242" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2027</text>
+          <text x="303" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2028</text>
+          <text x="364" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2029</text>
+          <text x="425" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2030</text>
+          <text x="486" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2031</text>
+          <text x="547" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2032</text>
+          <text x="608" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2033</text>
+          <text x="669" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2034</text>
+          <text x="730" y="350" fill="#8888a0" font-size="9" text-anchor="middle">2035</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Timeline view -->
+    <div class="timeline-wrap">
+      <h3>Timeline view — how overlaps unfold over time</h3>
+      <div class="timeline-header">
+        <div class="timeline-label-col">Project</div>
+        <div class="timeline-years">
+          <div class="timeline-year">2024</div>
+          <div class="timeline-year">2025</div>
+          <div class="timeline-year">2026</div>
+          <div class="timeline-year">2027</div>
+          <div class="timeline-year">2028</div>
+          <div class="timeline-year">2029</div>
+          <div class="timeline-year">2030</div>
+        </div>
+      </div>
+      <!-- rows -->
+      <div class="timeline-row">
+        <div class="tl-name" title="Shift from Steam to Heatpumps">Shift from Steam to Heatpumps</div>
+        <div class="tl-track">
+          <!-- 2024-2025: cols 0-1 of 7 → left: 0%, width: 14% -->
+          <div class="tl-bar" style="left:0%;width:14%;background:var(--projA);">P1</div>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <div class="tl-name" title="40% Efficiency by 2030 on Site Ops"><b>40% Efficiency (this)</b></div>
+        <div class="tl-track">
+          <!-- 2025-2028: cols 1-4 → left:14%, width:57% -->
+          <div class="tl-bar tl-this" style="left:14%;width:57%;background:var(--accent);color:#000;">This project</div>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <div class="tl-name" title="Electricity replaces 60% of steam">Electricity replaces steam</div>
+        <div class="tl-track">
+          <!-- 2024-2026: cols 0-2 → left:0%, width:28% -->
+          <div class="tl-bar" style="left:0%;width:28%;background:var(--purple);">P3</div>
+        </div>
+      </div>
+      <!-- overlap zone indicator -->
+      <div style="margin-top:12px;padding:10px 12px;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:6px;font-size:12px;color:var(--warn);">
+        <b>⚠ Active overlap: 2025–2025</b> — All three projects are active simultaneously in 2025. Each sees a progressively reduced emissions base. Consider reordering to reflect strategic priority.
+      </div>
+    </div>
+
+    <!-- note at bottom -->
+    <div class="note-bar">
+      <b>How order affects impact:</b> Projects stack sequentially — each one applies its percentage to the emissions remaining after all earlier projects. Reordering changes individual figures but not the <b>combined total</b> (−0.31 ktCO₂e). The order should reflect your real-world implementation sequence.
+    </div>
+
+    <!-- collapsible methodology explanation -->
+    <div class="methodology-card collapsible" id="method-card" onclick="this.classList.toggle('open')">
+      <h3>
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Methodology explanation
+        <span class="chevron">▾</span>
+      </h3>
+      <div class="method-body">
+        <!-- confidence & category chips -->
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);">High confidence</span>
+          <span style="background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);">Operations</span>
+          <span style="background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);">Scope 1</span>
+        </div>
+
+        <!-- big idea -->
+        <div class="big-idea-box" style="margin-bottom:16px;">
+          <div class="eyebrow">How impact is calculated</div>
+          <div class="statement">
+            This project's impact is the difference it makes <b>at its position in your plan</b> — your emissions <b>with</b> this project, minus your emissions <b>without</b> it.
+          </div>
+        </div>
+
+        <!-- step-by-step calculation -->
+        <div class="method-section">
+          <h4>Calculation for 2027</h4>
+          <div class="mono-block">
+<span class="dim">year 2027  ·  existing strategy = Business-as-usual forecast</span>
+
+<span class="dim">(baseline → grown by BF):</span>  <span class="hi">6,050 t × 1.061 = 6,419 t</span>
+
+<span class="dim">Projects before this one applied (Shift from Steam to Heatpumps −3.5%):</span>
+<span class="hi">  6,419 × 0.965 = 6,194 t</span>  <span class="dim">← starting point for this project</span>
+
+<span class="dim">This project (EF −3.5% by 2028, linear · at p=0.75 in 2027):</span>
+<span class="hi">  6,194 × (0.9737 − 1) = −163 t</span>  <span class="dim">────────── impact</span>
+
+<span class="hi">impact = −163 t (−2.6% vs existing)  →  with this project: 6,031 t CO₂e</span>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- what changes -->
+        <div class="method-section">
+          <h4>What this means for your numbers</h4>
+          <div class="what-changes-grid">
+            <div class="change-box stays">
+              <div class="ch">✓ Stays the same</div>
+              <ul>
+                <li>Your <b>total reduction</b> across the plan</li>
+                <li>Your <b>BAU forecast</b></li>
+                <li>Underlying project targets and data</li>
+              </ul>
+            </div>
+            <div class="change-box moves">
+              <div class="ch">→ May shift</div>
+              <ul>
+                <li>How <b>overlapping</b> projects split a shared saving</li>
+                <li>Projects on footprint segments growing at different rates</li>
+                <li>Standalone projects are typically unchanged</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-overlaps -->
+
+</div><!-- /content -->
+
+<script>
+  // ── Tab switching ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  // ── Drag and drop reorder ──
+  const list = document.getElementById('project-list');
+  let dragSrc = null;
+
+  list.querySelectorAll('.project-row').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragSrc = row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      list.querySelectorAll('.project-row').forEach(r => r.classList.remove('drag-over'));
+      renumber();
+      document.getElementById('reorder-callout').classList.add('visible');
+      setTimeout(() => document.getElementById('reorder-callout').classList.remove('visible'), 3000);
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (row !== dragSrc) {
+        list.querySelectorAll('.project-row').forEach(r => r.classList.remove('drag-over'));
+        row.classList.add('drag-over');
+      }
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc && dragSrc !== row) {
+        const rows = [...list.querySelectorAll('.project-row')];
+        const srcIdx = rows.indexOf(dragSrc);
+        const tgtIdx = rows.indexOf(row);
+        if (srcIdx < tgtIdx) {
+          list.insertBefore(dragSrc, row.nextSibling);
+        } else {
+          list.insertBefore(dragSrc, row);
+        }
+      }
+      row.classList.remove('drag-over');
+    });
+  });
+
+  function renumber() {
+    list.querySelectorAll('.project-row').forEach((row, i) => {
+      const num = row.querySelector('.proj-num');
+      num.textContent = i + 1;
+    });
+  }
+</script>
+</body>
+</html>
