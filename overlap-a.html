@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept A — Notification-first</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222636;
+    --border: #2e3347;
+    --accent: #4f8ef7;
+    --accent2: #34d399;
+    --accent3: #f59e0b;
+    --accent4: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --pill-bg: #1e2235;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+  /* Top nav breadcrumb */
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 32px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+  .topbar a { color: var(--muted); text-decoration: none; }
+  .topbar a:hover { color: var(--text); }
+  .topbar .sep { opacity: .4; }
+  .topbar .current { color: var(--text); font-weight: 500; }
+  .concept-badge { margin-left: auto; background: rgba(79,142,247,.15); border: 1px solid rgba(79,142,247,.3); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: .05em; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 53px); }
+
+  /* LEFT PANEL */
+  .left { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .left-header { padding: 20px 20px 12px; border-bottom: 1px solid var(--border); }
+  .left-header h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .left-header p { font-size: 12px; color: var(--muted); }
+
+  /* Warning banner */
+  .warning-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .warning-section h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+  .warn-card {
+    background: rgba(248,113,113,.08);
+    border: 1px solid rgba(248,113,113,.22);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .warn-card:hover { background: rgba(248,113,113,.14); border-color: rgba(248,113,113,.4); }
+  .warn-card.selected { background: rgba(248,113,113,.16); border-color: rgba(248,113,113,.55); }
+  .warn-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .warn-name { font-size: 13px; font-weight: 600; }
+  .warn-count { background: var(--accent4); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+  .warn-meta { font-size: 11px; color: var(--muted); }
+
+  /* Project list */
+  .proj-section { padding: 14px 16px; flex: 1; overflow-y: auto; }
+  .proj-section h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+  .proj-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px;
+    cursor: pointer; transition: background .12s;
+    margin-bottom: 2px;
+  }
+  .proj-item:hover { background: var(--surface2); }
+  .proj-item.active { background: var(--surface2); }
+  .proj-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .proj-name { flex: 1; font-size: 13px; }
+  .proj-status { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px; flex-shrink: 0; }
+  .status-overlap { background: rgba(248,113,113,.18); color: var(--accent4); }
+  .status-ok { background: rgba(52,211,153,.12); color: var(--accent2); }
+
+  /* RIGHT — MAIN AREA */
+  .main { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 40px; position: relative; }
+
+  /* Empty state */
+  .empty-state { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; max-width: 380px; }
+  .empty-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--surface2); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; }
+  .empty-state h2 { font-size: 20px; font-weight: 600; }
+  .empty-state p { color: var(--muted); font-size: 14px; }
+  .empty-hint { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; }
+  .hint-chip {
+    background: rgba(248,113,113,.1);
+    border: 1px solid rgba(248,113,113,.25);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--accent4);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .hint-chip:hover { background: rgba(248,113,113,.2); }
+
+  /* Detail view (shown when project selected) */
+  .detail { display: none; width: 100%; max-width: 760px; }
+  .detail.visible { display: block; }
+
+  .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+  .detail-header h2 { font-size: 22px; font-weight: 700; }
+  .detail-header p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 13px; cursor: pointer; transition: background .15s; }
+  .btn:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7ae8; border-color: #3a7ae8; }
+
+  .overlap-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .overlap-nav span { font-size: 13px; color: var(--muted); }
+  .nav-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s; }
+  .nav-btn:hover { background: var(--border); }
+  .nav-btn:disabled { opacity: .35; cursor: default; }
+  .overlap-counter { background: var(--pill-bg); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 12px; font-family: monospace; color: var(--accent); }
+
+  /* Timeline */
+  .timeline-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .timeline-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+  .timeline-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+  .tl-lane { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .tl-label { font-size: 12px; min-width: 100px; text-align: right; color: var(--text); }
+  .tl-track { flex: 1; height: 22px; background: var(--surface2); border-radius: 4px; position: relative; }
+  .tl-bar { position: absolute; top: 3px; height: 16px; border-radius: 3px; display: flex; align-items: center; padding: 0 6px; font-size: 10px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; }
+  .tl-collision { position: absolute; top: 0; height: 100%; background: rgba(248,113,113,.2); border-left: 1.5px dashed rgba(248,113,113,.7); border-right: 1.5px dashed rgba(248,113,113,.7); border-radius: 0; z-index: 0; }
+  .tl-collision-label { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: var(--accent4); white-space: nowrap; }
+
+  .conflict-card { background: var(--surface); border: 1px solid rgba(248,113,113,.3); border-radius: 12px; padding: 20px 24px; }
+  .conflict-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .conflict-card h3 svg { width: 16px; height: 16px; color: var(--accent4); flex-shrink: 0; }
+  .conflict-card p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  .conflict-actions { display: flex; gap: 10px; }
+
+  .no-overlap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 32px; text-align: center; color: var(--muted); }
+  .no-overlap svg { width: 32px; height: 32px; color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="overlap-hub.html">← All concepts</a>
+  <span class="sep">/</span>
+  <span class="current">Concept A — Notification-first</span>
+  <span class="concept-badge">Concept A</span>
+</div>
+
+<div class="layout">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-header">
+      <h2>Overlapping projects</h2>
+      <p>Select a project to review its conflicts</p>
+    </div>
+
+    <div class="warning-section">
+      <h3>Needs attention</h3>
+      <div class="warn-card" onclick="selectProject('solar')">
+        <div class="warn-top">
+          <span class="warn-name">Solar Farm Alpha</span>
+          <span class="warn-count">3 overlaps</span>
+        </div>
+        <div class="warn-meta">Overlaps with EV Fleet, Retrofit, Grid Storage</div>
+      </div>
+      <div class="warn-card" onclick="selectProject('retrofit')">
+        <div class="warn-top">
+          <span class="warn-name">Retrofit Buildings</span>
+          <span class="warn-count">1 overlap</span>
+        </div>
+        <div class="warn-meta">Overlaps with Solar Farm Alpha</div>
+      </div>
+    </div>
+
+    <div class="proj-section">
+      <h3>All projects</h3>
+      <div class="proj-item" onclick="selectProject('solar')" id="proj-solar">
+        <div class="proj-dot" style="background:#4f8ef7;"></div>
+        <span class="proj-name">Solar Farm Alpha</span>
+        <span class="proj-status status-overlap">3 overlaps</span>
+      </div>
+      <div class="proj-item" onclick="selectProject('ev')" id="proj-ev">
+        <div class="proj-dot" style="background:#a78bfa;"></div>
+        <span class="proj-name">EV Fleet Program</span>
+        <span class="proj-status status-ok">Clean</span>
+      </div>
+      <div class="proj-item" onclick="selectProject('retrofit')" id="proj-retrofit">
+        <div class="proj-dot" style="background:#f59e0b;"></div>
+        <span class="proj-name">Retrofit Buildings</span>
+        <span class="proj-status status-overlap">1 overlap</span>
+      </div>
+      <div class="proj-item" onclick="selectProject('logistics')" id="proj-logistics">
+        <div class="proj-dot" style="background:#34d399;"></div>
+        <span class="proj-name">Green Logistics</span>
+        <span class="proj-status status-ok">Clean</span>
+      </div>
+      <div class="proj-item" onclick="selectProject('grid')" id="proj-grid">
+        <div class="proj-dot" style="background:#f87171;"></div>
+        <span class="proj-name">Grid Storage</span>
+        <span class="proj-status status-ok">Clean</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="main" id="main-area">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2>No project selected</h2>
+      <p>Select a project from the left panel to see its overlaps and resolve conflicts. Projects with warnings need your attention.</p>
+      <div class="empty-hint">
+        <div class="hint-chip" onclick="selectProject('solar')">⚠ Solar Farm Alpha — 3 overlaps</div>
+        <div class="hint-chip" onclick="selectProject('retrofit')">⚠ Retrofit Buildings — 1 overlap</div>
+      </div>
+    </div>
+
+    <!-- Detail: Solar (has overlaps) -->
+    <div class="detail" id="detail-solar">
+      <div class="detail-header">
+        <div>
+          <h2>Solar Farm Alpha</h2>
+          <p>Jan 2024 – Dec 2024 &nbsp;·&nbsp; 3 overlapping projects found</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="clearProject()">← Back</button>
+          <button class="btn btn-primary">Resolve all</button>
+        </div>
+      </div>
+
+      <div class="overlap-nav">
+        <span>Reviewing overlap</span>
+        <button class="nav-btn" id="prev-btn-solar" onclick="changeOverlap('solar',-1)" disabled>‹</button>
+        <span class="overlap-counter" id="counter-solar">1 / 3</span>
+        <button class="nav-btn" id="next-btn-solar" onclick="changeOverlap('solar',1)">›</button>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="timeline-title">Project timeline</div>
+        <div class="timeline-axis"><span>Jan '24</span><span>Mar</span><span>Jun</span><span>Sep</span><span>Dec '24</span></div>
+        <div class="tl-lane">
+          <div class="tl-label">Solar Farm Alpha</div>
+          <div class="tl-track">
+            <div class="tl-collision" id="solar-col" style="left:35%;width:20%;"><div class="tl-collision-label">overlap</div></div>
+            <div class="tl-bar" style="left:2%;width:90%;background:#4f8ef7;">Solar Farm Alpha</div>
+          </div>
+        </div>
+        <div class="tl-lane" id="solar-other-lane">
+          <div class="tl-label" id="solar-other-label">EV Fleet</div>
+          <div class="tl-track">
+            <div class="tl-bar" id="solar-other-bar" style="left:28%;width:30%;background:#a78bfa;">EV Fleet Program</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conflict-card" id="solar-conflict">
+        <h3>
+          <svg fill="none" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="solar-conflict-title">Solar Farm Alpha overlaps with EV Fleet Program</span>
+        </h3>
+        <p id="solar-conflict-desc">Both projects claim reductions from the same emission activities in Apr – Jun 2024. You need to split the reduction or assign it exclusively to one project.</p>
+        <div class="conflict-actions">
+          <button class="btn">Split reduction</button>
+          <button class="btn btn-primary">Assign to Solar Farm</button>
+          <button class="btn">Assign to EV Fleet</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail: EV (no overlaps) -->
+    <div class="detail" id="detail-ev">
+      <div class="detail-header">
+        <div>
+          <h2>EV Fleet Program</h2>
+          <p>Mar 2024 – Aug 2024 &nbsp;·&nbsp; No overlaps</p>
+        </div>
+        <button class="btn" onclick="clearProject()">← Back</button>
+      </div>
+      <div class="no-overlap">
+        <svg fill="none" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <strong style="font-size:16px;color:var(--text);">No overlaps found</strong>
+        <span style="font-size:13px;">This project has no conflicting reductions with other projects.</span>
+      </div>
+    </div>
+
+    <!-- Detail: Retrofit (1 overlap) -->
+    <div class="detail" id="detail-retrofit">
+      <div class="detail-header">
+        <div>
+          <h2>Retrofit Buildings</h2>
+          <p>Jun 2024 – Mar 2025 &nbsp;·&nbsp; 1 overlapping project found</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="clearProject()">← Back</button>
+          <button class="btn btn-primary">Resolve</button>
+        </div>
+      </div>
+      <div class="overlap-nav">
+        <span>Reviewing overlap</span>
+        <button class="nav-btn" disabled>‹</button>
+        <span class="overlap-counter">1 / 1</span>
+        <button class="nav-btn" disabled>›</button>
+      </div>
+      <div class="timeline-wrap">
+        <div class="timeline-title">Project timeline</div>
+        <div class="timeline-axis"><span>Jan '24</span><span>Mar</span><span>Jun</span><span>Sep</span><span>Dec '24</span></div>
+        <div class="tl-lane">
+          <div class="tl-label">Retrofit Buildings</div>
+          <div class="tl-track">
+            <div class="tl-collision" style="left:38%;width:22%;"><div class="tl-collision-label">overlap</div></div>
+            <div class="tl-bar" style="left:35%;width:55%;background:#f59e0b;">Retrofit Buildings</div>
+          </div>
+        </div>
+        <div class="tl-lane">
+          <div class="tl-label">Solar Farm Alpha</div>
+          <div class="tl-track">
+            <div class="tl-bar" style="left:2%;width:90%;background:#4f8ef7;">Solar Farm Alpha</div>
+          </div>
+        </div>
+      </div>
+      <div class="conflict-card">
+        <h3>
+          <svg fill="none" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Retrofit Buildings overlaps with Solar Farm Alpha
+        </h3>
+        <p>Both projects claim the same electricity reductions in Jul – Aug 2024. Assign or split to resolve.</p>
+        <div class="conflict-actions">
+          <button class="btn">Split reduction</button>
+          <button class="btn btn-primary">Assign to Retrofit</button>
+          <button class="btn">Assign to Solar Farm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail: clean projects -->
+    <div class="detail" id="detail-logistics">
+      <div class="detail-header"><div><h2>Green Logistics</h2><p>Feb 2024 – Jul 2024 &nbsp;·&nbsp; No overlaps</p></div><button class="btn" onclick="clearProject()">← Back</button></div>
+      <div class="no-overlap"><svg fill="none" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><strong style="font-size:16px;color:var(--text);">No overlaps found</strong><span style="font-size:13px;">This project has no conflicting reductions.</span></div>
+    </div>
+    <div class="detail" id="detail-grid">
+      <div class="detail-header"><div><h2>Grid Storage</h2><p>Sep 2024 – Jun 2025 &nbsp;·&nbsp; No overlaps</p></div><button class="btn" onclick="clearProject()">← Back</button></div>
+      <div class="no-overlap"><svg fill="none" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><strong style="font-size:16px;color:var(--text);">No overlaps found</strong><span style="font-size:13px;">This project has no conflicting reductions.</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const solarOverlaps = [
+  { label: 'EV Fleet Program', bar: 'left:28%;width:30%;background:#a78bfa;', col: 'left:28%;width:22%;', title: 'Solar Farm Alpha overlaps with EV Fleet Program', desc: 'Both projects claim reductions from the same emission activities in Apr – Jun 2024. Split the reduction or assign it exclusively to one project.', actions: ['Split reduction', 'Assign to Solar Farm', 'Assign to EV Fleet'] },
+  { label: 'Retrofit Buildings', bar: 'left:35%;width:55%;background:#f59e0b;', col: 'left:45%;width:18%;', title: 'Solar Farm Alpha overlaps with Retrofit Buildings', desc: 'Overlapping reductions in Jul – Aug 2024 from building energy activities shared by both projects.', actions: ['Split reduction', 'Assign to Solar Farm', 'Assign to Retrofit'] },
+  { label: 'Grid Storage', bar: 'left:62%;width:32%;background:#f87171;', col: 'left:62%;width:20%;', title: 'Solar Farm Alpha overlaps with Grid Storage', desc: 'Both claim electricity generation reductions in Sep – Oct 2024 from the same grid segment.', actions: ['Split reduction', 'Assign to Solar Farm', 'Assign to Grid Storage'] },
+];
+let solarIdx = 0;
+
+function changeOverlap(proj, dir) {
+  if (proj === 'solar') {
+    solarIdx = Math.max(0, Math.min(solarOverlaps.length - 1, solarIdx + dir));
+    renderSolarOverlap();
+  }
+}
+
+function renderSolarOverlap() {
+  const o = solarOverlaps[solarIdx];
+  document.getElementById('solar-other-label').textContent = o.label;
+  document.getElementById('solar-other-bar').setAttribute('style', o.bar);
+  document.getElementById('solar-col').setAttribute('style', o.col);
+  document.getElementById('counter-solar').textContent = (solarIdx + 1) + ' / ' + solarOverlaps.length;
+  document.getElementById('solar-conflict-title').textContent = o.title;
+  document.getElementById('solar-conflict-desc').textContent = o.desc;
+  document.getElementById('prev-btn-solar').disabled = solarIdx === 0;
+  document.getElementById('next-btn-solar').disabled = solarIdx === solarOverlaps.length - 1;
+}
+
+function selectProject(id) {
+  document.getElementById('empty-state').style.display = 'none';
+  document.querySelectorAll('.detail').forEach(d => d.classList.remove('visible'));
+  document.querySelectorAll('.proj-item').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.warn-card').forEach(w => w.classList.remove('selected'));
+  const detail = document.getElementById('detail-' + id);
+  if (detail) detail.classList.add('visible');
+  const projEl = document.getElementById('proj-' + id);
+  if (projEl) projEl.classList.add('active');
+}
+
+function clearProject() {
+  document.getElementById('empty-state').style.display = '';
+  document.querySelectorAll('.detail').forEach(d => d.classList.remove('visible'));
+  document.querySelectorAll('.proj-item').forEach(p => p.classList.remove('active'));
+}
+</script>
+</body>
+</html>
